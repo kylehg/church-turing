@@ -16,7 +16,7 @@ t' = ((lam "x" $ var "y") <-> (lam "z" $ lam "q" $ (var "z") <-> (var "z")))
      <-> ((lam "f" $ var "g") <-> (lam "y" $ var "h"))
 
 -- Church arithmatic ----------------------------------------------------------
-zero, succ, one, two, add, three, four, five, mul, pred, sub :: Term
+zero, succ, mul, pred, sub :: Term
 
 -- | zero = \f.\z.z
 zero = lam "f" $ lam "z" $ var "z"
@@ -39,13 +39,6 @@ fromChurch t = case (nf t) of
         countApps (Var _) c          = Just c
         countApps _ _                = Nothing
 
-
--- | numbers
-one = succ <-> zero
-two = succ <-> one
-three = succ <-> two
-four = succ <-> three
-five = succ <-> four
 -- | add = \m.\n.\f.\z.m f (n f z)
 add = lam "m" $ lam "n" $ lam "f" $ lam "z" $
       (var "m") <-> (var "f") <-> ((var "n") <-> (var "f") <-> (var "z"))
@@ -55,8 +48,9 @@ mul = lam "m" $ lam "n" $ lam "f" $ (var "m") <-> ((var "n") <-> (var "f"))
 
 
 -- Factorial ------------------------------------------------------------------
-true, false, not, and, or, pair, fst, snd, iszero, equal, y,
- fact1, fact :: Term
+true, false, not, and, or, pair, fst, snd, iszero, equal, y, fact1,
+ fact :: Term
+
 -- | true = \t.\f.t
 true = lam "t" $ lam "f" $ var "t"
 
