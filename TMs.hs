@@ -1,3 +1,5 @@
+module TMs where
+
 import qualified Data.Set as Set
 import Test.HUnit
 import Turing

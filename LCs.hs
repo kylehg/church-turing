@@ -1,5 +1,7 @@
 -- Some lambda calculus terms
 
+module LCs where
+
 import Church
 import Prelude hiding (and, pred, fst, snd, succ)
 import Test.HUnit

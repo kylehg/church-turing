@@ -3,6 +3,8 @@ module Conversion where
 import Data.Map (Map)
 import Church
 import Turing
+import LCs
+import TMs
 
 
 -- | Given a LC term and a term to apply it to, convert them into a TM
@@ -10,7 +12,7 @@ import Turing
 lcToTM :: Term -> Tape
 lcToTM = tapeFromList . lcToTM' where
   lcToTM' (Var n)     = varToTape n
-  lcToTM' (Lam n t)   = "\\" ++ (varToTape n) ++ "[" ++ lcToTM' t ++ "]"
+  lcToTM' (Lam n t)   = "\\" ++ (varToTape n) ++ lcToTM' t
   lcToTM' (App t1 t2) = "[" ++ (lcToTM' t1) ++ "][" ++ (lcToTM' t2) ++ "]"
 
 
@@ -23,18 +25,28 @@ varToTape n = varMap' n allNames where
 
 fun :: (TMState, Alphabet) -> (TMState, Alphabet, Dir)
 fun (s, w) = case (s, w) of
-  -- Var -> do nothing
-  (nf, '\'') -> (nf, '\'', R)
-  (nf, 'x') -> (e, 'x', R)
+  (nf, x')  -> (nf,  x', R) -- Var -> do nothing
+  (nf, x)   -> (e,   x,  R)
   
-  -- Lam: reduce term
-  (nf, '\\') -> (readlam, '\\', R)
-  (readlam, '\'') -> (readlam, '\'', R)
-  (readlam, 'x') -> (nf, 'x', R)
+  (nf,  l)  -> (lam, l,  R) -- Lam: reduce term
+  (lam, x') -> (lam, x', R)
+  (lam, x)  -> (nf,  x,  R)
   
-  -- App:
+  (nf,  bl) -> (wnf, h,  R) -- Do whnf
+
+  (wnf, lb) -> (wnf, a,  R) -- Do whnf
+  (wnf, _)  -> (ret, _,  L) -- Not an app - leave wnf
+  (ret -- Return from WNF
+   -- TODO: Figure out how to leave "function call"
+
   where
     nf = 0
-    readlam = 2
+    lam = 2
     e = 3
-  
+    x = 'x'
+    x' = '\''
+    bl = '['
+    br = ']'
+    l = '\\'
+    h = '#'
+    a = '&'
