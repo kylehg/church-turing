@@ -22,11 +22,11 @@ instance Show Term where
 
 instance Eq Term where
   (==) = alphaEq Map.empty where
-    alphaEq :: Map.Map Name Name -> Term -> Term -> Bool
-    alphaEq v (App t1a t1b) (App t2a t2b) = (alphaEq v t1a t2a) && (alphaEq v t1b t2b)
-    alphaEq v (Lam n1 t1)   (Lam n2 t2)   = alphaEq (Map.insert n1 n2 v) t1 t2
-    alphaEq v (Var n1)      (Var n2)      = maybe False (== n2) (Map.lookup n1 v)
-    alphaEq _ _ _                         = False
+    aEq :: Map.Map Name Name -> Term -> Term -> Bool
+    aEq m (App t1 t1') (App t2 t2') = (aEq m t1 t2) && (aEq m t1' t2')
+    aEq m (Lam n1 t1)  (Lam n2 t2)  = aEq (Map.insert n1 n2 m) t1 t2
+    aEq m (Var n1)     (Var n2)     = maybe False (== n2) (Map.lookup n1 m)
+    aEq _ _ _                       = False
 
 instance Arbitrary Term where
   arbitrary = sized term where
