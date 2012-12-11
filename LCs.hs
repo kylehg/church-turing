@@ -99,7 +99,7 @@ y = phi <-> phi where phi = lam "x" $ lam "f" $
                             (var "f") <-> ((var "x") <-> (var "x") <-> var "f")
 
 -- | fact1 = \f.\n.(iszero n) one (mul n (f (pred n)))
-fact1 = lam "f" $ lam "n" $ (iszero <-> (var "n")) <-> one <->
+fact1 = lam "f" $ lam "n" $ (iszero <-> (var "n")) <-> (toChurch 1) <->
         (mul <-> (var "n") <-> ((var "f") <-> (pred <-> (var "n"))))
 
 -- | fact = y fact1

@@ -87,5 +87,7 @@ newVar :: Set Name -> Name
 newVar vs = case (find (\v -> member v vs) allNames) of
   Just var -> var
   Nothing  -> error "Impossible: infinite possible var names."
-  where 
-    allNames = [x:y | y <- [replicate n '\'' | n <- [0..]], x <- ['a'..'z']]
+
+-- | All possible variable names
+allNames :: [Name]
+allNames = [x:y | y <- [replicate n '\'' | n <- [0..]], x <- ['a'..'z']]
