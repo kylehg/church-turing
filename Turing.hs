@@ -29,22 +29,18 @@ data Tape = Tape [Alphabet] [Alphabet] deriving (Eq, Show)
 blank :: Alphabet
 blank = '_'
 
-
 -- | Convert a list of symbols to a Tape
 tapeFromList :: [Alphabet] -> Tape
 tapeFromList cs = Tape [] cs
-
 
 -- | Convert a Tape back into a list of symbols
 listFromTape :: Tape -> [Alphabet]
 listFromTape (Tape ls rs) = ls ++ rs
 
-
 -- | Read a symbol from the tape
 getC :: Tape -> Alphabet
 getC (Tape _ (c:cs)) = c
 getC (Tape _ [])     = '_'
-
 
 -- | Move the TM head along the Tape in a particular direction
 move :: Dir -> Tape -> Tape
@@ -53,17 +49,17 @@ move R (Tape ls [])     = Tape (blank:ls) []
 move L (Tape (c:ls) rs) = Tape ls (c:rs)
 move L t                = t
 
-
 -- | Write a symbol at the head position of the tape and move
 write :: Alphabet -> Dir -> Tape -> Tape
 write c d (Tape ls (_:rs)) = move d $ Tape ls (c:rs)
 write c d (Tape ls [])     = move d $ Tape ls [c]
 
-
 -- | Run a TM until it hits an end state and return the resulting tape.
 runTM :: TM -> Tape -> Tape
 runTM m t = t' where (_, t') = runFromState m (start m, t)
 
+-- | Given a TM and its state and tape position, run it until it reaches an
+-- end state.
 runFromState :: TM -> (TMState, Tape) -> (TMState, Tape)
 runFromState m (s, t) | s == end m = (s, t)
                       | otherwise  = runFromState m (s', t')

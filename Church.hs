@@ -23,7 +23,7 @@ instance Arbitrary Term where
   arbitrary = sized term where
     v = (:[]) <$> elements ['p'..'z']
     term 0 = var <$> v
-    term n = oneof [lam <$> v <*> term (n-1), 
+    term n = oneof [lam <$> v <*> term (n-1),
                     (<->) <$> term (n `div` 2) <*> term (n `div` 2)]
 
 -- Some helpers
