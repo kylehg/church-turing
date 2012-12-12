@@ -23,9 +23,10 @@ varToTape n = varMap' n allNames where
   varMap' n (n0:ns) | n == n0   = "x"
                     | otherwise = '\'' : (varMap' n ns)
 
-fun :: (TMState, Alphabet) -> (TMState, Move)
-fun (s, w) = case (s, w) of
-  (start, _) -> (
+
+--fun :: (TMState, Alphabet) -> (TMState, Move)
+--fun (s, w) = case (s, w) of
+--  (start, _) -> (
 --  (nf, x') -> (nf, [R]) -- Var -> do nothing
 --  (nf, x)  -> (e, [R])
 --  
@@ -48,15 +49,15 @@ fun (s, w) = case (s, w) of
   
 --  (ret -- Return from WNF
    -- TODO: Figure out how to leave "function call"
-
-  where
-    nf = 0
-    lam = 2
-    e = 3
-    x = 'x'
-    x' = '\''
-    bl = '['
-    br = ']'
-    l = '\\'
-    h = '#'
-    a = '&'
+--
+--  where
+--    nf = 0
+--    lam = 2
+--    e = 3
+--    x = 'x'
+--    x' = '\''
+--    bl = '['
+--    br = ']'
+--    l = '\\'
+--    h = '#'
+--    a = '&'
