@@ -79,16 +79,16 @@ whnf (App f a)   = case whnf f of
   
 -- | Substitute a term `s` for a variable named `x` in `b`.
 subst :: Name -> Term -> Term -> Term
-subst x s b = sub b where
-  sub e@(Var v)    | v == x    = s
-                   | otherwise = e
-  sub e@(Lam v e') | v == x       = e
-                   | member v fvs = Lam v' (sub e'')
-                   | otherwise    = Lam v (sub e') where
+subst x new = sub where
+  sub t@(Var n)    | n == x    = new
+                   | otherwise = t
+  sub t@(Lam n t') | n == x       = t
+                   | member n fvs = Lam v' (sub e'')
+                   | otherwise    = Lam n (sub e') where
                      v' = newVar vs
-                     e'' = subst v (Var v') e'
+                     e'' = subst n (Var v') e'
   sub (App f a)    = App (sub f) (sub a)
-  fvs = freeVars s
+  fvs = freeVars new
   vs = fvs `union` allVars b
 
 -- | Return a variable name not in a set of existing variable names.

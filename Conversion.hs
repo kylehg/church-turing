@@ -11,7 +11,7 @@ import TMs
 -- | Given a LC term and a term to apply it to, convert them into a TM
 -- and tape to run it on, respectively.
 lcToTM :: Term -> Tape
-lcToTM = tapeFromList . (intersperse ' ') . lcToTM' where
+lcToTM = tapeFromList . lcToTM' where
   lcToTM' (Var n)     = varToTape n
   lcToTM' (Lam n t)   = "\\" ++ (varToTape n) ++ lcToTM' t
   lcToTM' (App t1 t2) = "[" ++ (lcToTM' t1) ++ "][" ++ (lcToTM' t2) ++ "]"
@@ -23,19 +23,29 @@ varToTape n = varMap' n allNames where
   varMap' n (n0:ns) | n == n0   = "x"
                     | otherwise = '\'' : (varMap' n ns)
 
-fun :: (TMState, Alphabet) -> (TMState, Alphabet, Dir)
+fun :: (TMState, Alphabet) -> (TMState, Move)
 fun (s, w) = case (s, w) of
-  (nf, x')  -> (nf,  x', R) -- Var -> do nothing
-  (nf, x)   -> (e,   x,  R)
+  (start, _) -> (
+--  (nf, x') -> (nf, [R]) -- Var -> do nothing
+--  (nf, x)  -> (e, [R])
+--  
+--  (nf,  l)  -> (lam, [R]) -- Lam: ignore var, reduce term
+--  (lam, x') -> (lam, [R])
+--  (lam, x)  -> (nf,  [R])
+--  
+--  (nf, bl) -> (wnf, [R, I '#', R]) -- App: whnf the first term
+--
+--  (wnf, bl) -> (wnf, [R, I '$', R]) -- Do whnf
+--  (wnf, _)  -> (rwnf, [L]) -- Not an app - leave wnf
+--  
+--  -- Return out of a WNF call
+--  (rwnf, '#') -> (nfsub, [E, I '|', R]) -- Returning to a nf call
+--  (rwnf, '$') -> (wnfsub, [E, I '|', R]) -- Returning to a wnf call
+--  (rwnf, _)   -> (rwnf, [L]) -- Keep returning
+--  
+--  -- Perform a substition as part of a wnf call
+--  (wnfsub
   
-  (nf,  l)  -> (lam, l,  R) -- Lam: reduce term
-  (lam, x') -> (lam, x', R)
-  (lam, x)  -> (nf,  x,  R)
-  
-  (nf,  bl) -> (wnf, h,  R) -- Do whnf
-
-  (wnf, lb) -> (wnf, a,  R) -- Do whnf
-  (wnf, _)  -> (ret, _,  L) -- Not an app - leave wnf
 --  (ret -- Return from WNF
    -- TODO: Figure out how to leave "function call"
 
