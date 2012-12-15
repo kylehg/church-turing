@@ -1,11 +1,11 @@
 module Conversion where
 
-import Data.Map (Map)
-import Data.List (intersperse)
-import Church
-import Turing
-import LCs
-import TMs
+import qualified Data.Set as Set
+import           Test.HUnit
+import           Church
+import           Turing
+import           LCs
+import           TMs
 
 
 -- | Given a LC term and a term to apply it to, convert them into a TM
@@ -22,6 +22,28 @@ varToTape :: Name -> String
 varToTape n = varMap' n allNames where
   varMap' n (n0:ns) | n == n0   = "x"
                     | otherwise = '\'' : (varMap' n ns)
+
+
+-- | Given an alphabet, convert a tape symbol to an LC term.
+--symToLC :: Set.Set Char -> Char -> Term -> Term
+--symToLC cs c t = foldr lam (var c) $ Set.elems cs
+----  symToLC' (a:as) = lam [a] $ symToLC' as
+----  sumToLC' []     = var c
+--
+--test_symToLC :: Test
+--test_symToLC = symToLC (Set.fromList ['a'..'d']) 'b'
+--               ~?= lam "a" $ lam "b" $ lam "c" $ lam "d" $ var "b"
+
+convTape :: Set.Set Char -> String -> Term
+convTape cs s = foldr convChar b s where
+  convChar c t = foldr lam (var [c] <-> t) $ Set.elems cs
+  -- TODO: In the base case, we apply the ID function. Is that right?
+  b = lam "" $ var ""
+
+-- TODO
+--test_convTape :: Test
+--test_convTape = symToLC (Set.fromList ['a'..'d']) "b"
+--                ~?= lam "a" $ lam "b" $ lam "c" $ lam "d" $ var "b"
 
 
 --fun :: (TMState, Alphabet) -> (TMState, Move)
@@ -61,3 +83,10 @@ varToTape n = varMap' n allNames where
 --    l = '\\'
 --    h = '#'
 --    a = '&'
+
+main :: IO ()
+main = do
+  _ <- runTestTT $ TestList [
+    --test_symToLC
+    ]
+  return ()
