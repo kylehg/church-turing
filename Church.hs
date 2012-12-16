@@ -103,4 +103,5 @@ newVar vs = case (find (`Set.member` vs) allNames) of
 
 -- | All possible variable names: [a...z, a'...z', a''...]
 allNames :: [Name]
-allNames = [x:y | y <- [replicate n '\'' | n <- [0..]], x <- ['a'..'z']]
+allNames = [x:y | y <- [replicate n '\'' | n <- [0..]]
+                , x <- ['a'..'z']]
