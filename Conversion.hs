@@ -24,65 +24,15 @@ varToTape n = varMap' n allNames where
                     | otherwise = '\'' : (varMap' n ns)
 
 
--- | Given an alphabet, convert a tape symbol to an LC term.
---symToLC :: Set.Set Char -> Char -> Term -> Term
---symToLC cs c t = foldr lam (var c) $ Set.elems cs
-----  symToLC' (a:as) = lam [a] $ symToLC' as
-----  sumToLC' []     = var c
---
---test_symToLC :: Test
---test_symToLC = symToLC (Set.fromList ['a'..'d']) 'b'
---               ~?= lam "a" $ lam "b" $ lam "c" $ lam "d" $ var "b"
+-- TM to LC -------------------------------------------------------------------
 
+-- | Given an alphabet, convert a tape of symbols to an LC term.
 convTape :: Set.Set Char -> String -> Term
 convTape cs s = foldr convChar b s where
   convChar c t = foldr lam (var [c] <-> t) $ Set.elems cs
   -- TODO: In the base case, we apply the ID function. Is that right?
   b = lam "" $ var ""
 
--- TODO
---test_convTape :: Test
---test_convTape = symToLC (Set.fromList ['a'..'d']) "b"
---                ~?= lam "a" $ lam "b" $ lam "c" $ lam "d" $ var "b"
-
-
---fun :: (TMState, Alphabet) -> (TMState, Move)
---fun (s, w) = case (s, w) of
---  (start, _) -> (
---  (nf, x') -> (nf, [R]) -- Var -> do nothing
---  (nf, x)  -> (e, [R])
---  
---  (nf,  l)  -> (lam, [R]) -- Lam: ignore var, reduce term
---  (lam, x') -> (lam, [R])
---  (lam, x)  -> (nf,  [R])
---  
---  (nf, bl) -> (wnf, [R, I '#', R]) -- App: whnf the first term
---
---  (wnf, bl) -> (wnf, [R, I '$', R]) -- Do whnf
---  (wnf, _)  -> (rwnf, [L]) -- Not an app - leave wnf
---  
---  -- Return out of a WNF call
---  (rwnf, '#') -> (nfsub, [E, I '|', R]) -- Returning to a nf call
---  (rwnf, '$') -> (wnfsub, [E, I '|', R]) -- Returning to a wnf call
---  (rwnf, _)   -> (rwnf, [L]) -- Keep returning
---  
---  -- Perform a substition as part of a wnf call
---  (wnfsub
-  
---  (ret -- Return from WNF
-   -- TODO: Figure out how to leave "function call"
---
---  where
---    nf = 0
---    lam = 2
---    e = 3
---    x = 'x'
---    x' = '\''
---    bl = '['
---    br = ']'
---    l = '\\'
---    h = '#'
---    a = '&'
 
 main :: IO ()
 main = do
