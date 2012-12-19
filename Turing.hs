@@ -20,6 +20,7 @@ data Action = R          -- Read right
 data TM = TM {
   -- The possible states
   states :: Set.Set TMState,
+  alpha  :: Set.Set Char,
   -- The transition function
   trans  :: (TMState, Alphabet) -> (TMState, Move),
   -- The beginning state
@@ -47,6 +48,13 @@ listFromTape (Tape ls rs) = ls ++ rs
 getC :: Tape -> Alphabet
 getC (Tape _ (c:cs)) = c
 getC (Tape _ [])     = '_'
+
+behind :: Tape -> [Alphabet]
+behind (Tape ls _) = ls
+
+ahead :: Tape -> [Alphabet]
+ahead (Tape _ (r:rs)) = rs
+ahead (Tape _ [])     = "_"
 
 -- | Move the TM head along the Tape in a particular direction
 move :: Action -> Tape -> Tape

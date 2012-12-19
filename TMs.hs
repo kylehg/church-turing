@@ -44,7 +44,8 @@ m1 = TM {
   trans  = trans1,
   start  = 1,
   end    = 6,
-  states = Set.fromList [1..6]
+  states = Set.fromList [1..6],
+  alpha  = Set.fromList "_0x"
   }
 
 test1 :: Test

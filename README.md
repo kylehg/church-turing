@@ -5,6 +5,18 @@ For the final project in Brent Yorgey's [Art of Recursion](http://www.cis.upenn.
 
 More documentation to come as the project progresses.
 
+## Turing machine → lambda calculus
+
+Given a finite alphabet _S_, we encode a symbol _xi_ in that alphabet as `\x1.\x2.[...]\xn.\e.xi`, where _e_ is represents the blank symbol. Thus, for the whole tape, `w1w2w3` is encoded as
+
+`\x1.x2.[...]\xn.\e.w1 (\x1.\x2.[...]\xn.\e.w2 (\x1.[...]\xn.\e.w3 (\x1.[...]\xn.\e.e)))`
+
+Reading symbols is somewhat trivial, then.
+
+
+Plan:
+- 
+
 
 ### Reduction strategy
 
