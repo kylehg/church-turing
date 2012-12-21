@@ -26,25 +26,19 @@ els cs s = foldr el' empty s where
 iterLam :: Show c => [c] -> Term -> Term
 iterLam cs t = foldr (lam . show) t cs
 
+-- | Iterate a set of applications for each element in a set, starting 
+-- with a given term.
 iterApp :: [c] -> Term -> (c -> Term) -> Term
 iterApp cs t f = iterApp' (reverse cs) where
   iterApp' (c:cs) = (iterApp' cs) <-> (f c)
   iterApp' []     = t
 
+-- | Like el, except applies the determining variable to a given term 
+-- at the end.
 appEl :: Show c => [c] -> c -> Term -> Term
 appEl cs c t = iterLam cs (var (show c) <-> t)
 
--- |
---iterApp :: Show c => [Term] -> Term -> Term
---iterApp ts t = foldl (<->) t ts where
-  
--- | Cons symbol terms 
--- (cons cs) <-> (el cs a) <-> (els cs as) --> els cs (a:as)
-cons :: [Char] -> Term
-cons cs =
-  lam "a" $ lam "as" $ iterApp cs (var "a") cons' <-> var "as" where
-    cons' c = lam "as" $ iterLam cs (lam "b" $ var (show c) <-> var "as")
-
+-- | Convert a term back into a string (if it's valid).
 fromTerm :: [Char] -> Term -> Maybe String
 fromTerm abc = fromTerm' Map.empty abc where
   fromTerm' m (c:cs) (Lam x t)           = fromTerm' (Map.insert x c m) cs t
@@ -55,17 +49,24 @@ fromTerm abc = fromTerm' Map.empty abc where
                                          | otherwise = Nothing
   fromTerm' _ _ _                        = Nothing
 
-abc = "abcd"
-a = el abc 'b'
-as = els abc "acd"
-s1 = nf $ cons abc <-> a <-> as
-s2 = els abc "bacd"
-s3 = nf $ cat abc <-> as <-> as
-s4 = els abc "acdacd"
 
+-- Lambdas --------------------------------------------------------------------
+-- | The TM combinator. H f -> f (\z.H f z)
+recurse :: Term
+recurse = m <-> m where
+  m = lam "x" $ lam "f" $
+      var "f" <-> (lam "z" $ var "x" <-> var "x" <-> var "f" <-> var "z" )
 
+-- | The identity lambda
 id :: Term
 id = lam "x" $ var "x"
+
+-- | Cons symbol terms 
+-- (cons cs) <-> (el cs a) <-> (els cs as) --> els cs (a:as)
+cons :: [Char] -> Term
+cons cs =
+  lam "a" $ lam "as" $ iterApp cs (var "a") cons' <-> var "as" where
+    cons' c = lam "as" $ iterLam cs (lam "b" $ var (show c) <-> var "as")
 
 -- | Concatenate symbol terms
 -- (cat cs) <-> (els cs a) <-> (els cs b) --> els cs (a ++ b)
@@ -77,6 +78,17 @@ cat cs = recurse <-> cat' where
             (lam "h" $ iterLam cs $ lam "g" $ var (show c) <-> var "h") <->
             (var "x" <-> var "a" <-> var "b")
 
+
+
+abc = "abcd"
+a = el abc 'b'
+as = els abc "acd"
+s1 = nf $ cons abc <-> a <-> as
+s2 = els abc "bacd"
+s3 = nf $ cat abc <-> as <-> as
+s4 = els abc "acdacd"
+
+
 config :: TM -> Tape -> TMState -> Term
 config m t q = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
   ls = els (alpha m) (behind t)
@@ -84,37 +96,6 @@ config m t q = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
   rs = els (alpha m) (ahead t)
   qt = el (states m) q
   
-
--- | Given an alphabet and a lambda term, encode ther term in the body of a
--- lambda for that alphabet.
-convSymWith :: Show a => [a] -> Term -> Term
-convSymWith cs t = foldr (lam . show) (lam "__" $ t) $ cs
-
-convSymApp cs c t = convSymWith cs $ var (show c) <-> t
-
--- | Given an alphabet, convert a tape of symbols to an LC term.
-convTape :: String -> String -> Term
-convTape cs = foldr (\c t -> convSymApp cs c t) (convSymWith cs $ var "__")
-
-convTMConfig :: String -> [Int] -> (Tape, Int) -> Term
-convTMConfig cs qs (t, q) =
-  lam "x" $ var "x" <-> (convTape cs $ behind t) <-> 
-  (convSym cs $ getC t) <-> (convTape cs $ ahead t) <-> (convSym qs q)
-
-convSym :: Show a => [a] -> a -> Term
-convSym cs c = convSymWith cs (var $ show c)
-  
-
--- | The Y-combinator. Y f -> f (Y f)
-y :: Term
-y = f <-> f where
-  f = lam "x" $ lam "f" $ var "f" <-> (var "x" <-> var "x" <-> var "f")
-
--- | The TM combinator. H f -> f (\z.H f z)
-recurse :: Term
-recurse = m <-> m where
-  m = lam "x" $ lam "f" $
-      var "f" <-> (lam "z" $ var "x" <-> var "x" <-> var "f" <-> var "z" )
 
 {-
 initTerm :: TM -> Term
