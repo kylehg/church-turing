@@ -60,6 +60,8 @@ a = el abc 'b'
 as = els abc "acd"
 s1 = nf $ cons abc <-> a <-> as
 s2 = els abc "bacd"
+s3 = nf $ cat abc <-> as <-> as
+s4 = els abc "acdacd"
 
 
 id :: Term
@@ -70,11 +72,10 @@ id = lam "x" $ var "x"
 cat :: [Char] -> Term
 cat cs = recurse <-> cat' where
   cat' = lam "x" $ lam "a" $ lam "b" $
-         var "a" <-> foldl cat' (id <-> var "b") cs where
-           cat' t c =
-             (lam "a" $ lam "b" $
-              (lam "h" $ iterLam cs $ lam "g" $ var (show c) <-> var "h") <->
-              (var "x" <-> var "a" <-> var "b")) <-> t
+         iterApp cs (var "a") cat'' <-> id <-> var "b"
+  cat'' c = lam "a" $ lam "b" $
+            (lam "h" $ iterLam cs $ lam "g" $ var (show c) <-> var "h") <->
+            (var "x" <-> var "a" <-> var "b")
 
 config :: TM -> Tape -> TMState -> Term
 config m t q = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
