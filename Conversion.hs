@@ -1,14 +1,88 @@
 module Conversion where
 
 import qualified Data.Set as Set
-import           Test.HUnit
+import qualified Data.Map as Map
+--import           Test.HUnit
 import           Church
 import           Turing
 import           LCs
 import           TMs
-
+import Prelude hiding (id)
 
 -- TM to LC -------------------------------------------------------------------
+
+-- | Represent a single element in a set.
+el :: Show c => [c] -> c -> Term
+el cs c = iterLam cs (var $ show c)
+
+-- | Represent a string of characters in an alphabet.
+els :: Show c => [c] -> [c] -> Term
+els cs s = foldr el' empty s where
+  el' c t = iterLam cs (lam e $ var (show c) <-> t)
+  empty = iterLam cs (lam e $ var e)
+  e = "e"
+
+-- | Iterate a set of elements as a series of lambdas ending in a term.
+iterLam :: Show c => [c] -> Term -> Term
+iterLam cs t = foldr (lam . show) t cs
+
+iterApp :: [c] -> Term -> (c -> Term) -> Term
+iterApp cs t f = iterApp' (reverse cs) where
+  iterApp' (c:cs) = (iterApp' cs) <-> (f c)
+  iterApp' []     = t
+
+appEl :: Show c => [c] -> c -> Term -> Term
+appEl cs c t = iterLam cs (var (show c) <-> t)
+
+-- |
+--iterApp :: Show c => [Term] -> Term -> Term
+--iterApp ts t = foldl (<->) t ts where
+  
+-- | Cons symbol terms 
+-- (cons cs) <-> (el cs a) <-> (els cs as) --> els cs (a:as)
+cons :: [Char] -> Term
+cons cs =
+  lam "a" $ lam "as" $ iterApp cs (var "a") cons' <-> var "as" where
+    cons' c = lam "as" $ iterLam cs (lam "b" $ var (show c) <-> var "as")
+
+fromTerm :: [Char] -> Term -> Maybe String
+fromTerm abc = fromTerm' Map.empty abc where
+  fromTerm' m (c:cs) (Lam x t)           = fromTerm' (Map.insert x c m) cs t
+  fromTerm' m [] (Lam e (App (Var x) t)) = do c <- Map.lookup x m
+                                              cs <- fromTerm abc t
+                                              return (c:cs)
+  fromTerm' m [] (Lam e (Var x))         | e == x    = Just ""
+                                         | otherwise = Nothing
+  fromTerm' _ _ _                        = Nothing
+
+abc = "abcd"
+a = el abc 'b'
+as = els abc "acd"
+s1 = nf $ cons abc <-> a <-> as
+s2 = els abc "bacd"
+
+
+id :: Term
+id = lam "x" $ var "x"
+
+-- | Concatenate symbol terms
+-- (cat cs) <-> (els cs a) <-> (els cs b) --> els cs (a ++ b)
+cat :: [Char] -> Term
+cat cs = recurse <-> cat' where
+  cat' = lam "x" $ lam "a" $ lam "b" $
+         var "a" <-> foldl cat' (id <-> var "b") cs where
+           cat' t c =
+             (lam "a" $ lam "b" $
+              (lam "h" $ iterLam cs $ lam "g" $ var (show c) <-> var "h") <->
+              (var "x" <-> var "a" <-> var "b")) <-> t
+
+config :: TM -> Tape -> TMState -> Term
+config m t q = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
+  ls = els (alpha m) (behind t)
+  c = el (alpha m) (getC t)
+  rs = els (alpha m) (ahead t)
+  qt = el (states m) q
+  
 
 -- | Given an alphabet and a lambda term, encode ther term in the body of a
 -- lambda for that alphabet.
@@ -36,15 +110,11 @@ y = f <-> f where
   f = lam "x" $ lam "f" $ var "f" <-> (var "x" <-> var "x" <-> var "f")
 
 -- | The TM combinator. H f -> f (\z.H f z)
-h :: Term
-h = m <-> m where
+recurse :: Term
+recurse = m <-> m where
   m = lam "x" $ lam "f" $
       var "f" <-> (lam "z" $ var "x" <-> var "x" <-> var "f" <-> var "z" )
 
--- | Concatenate symbol terms
-cons :: String -> Term
-cons cs = lam "c" $ lam "cs" $ var "c" <-> foldr cons' (var "cs") cs where
-  cons' c t = (lam "cs" $ convSymApp cs c $ var "cs") <-> t
 {-
 initTerm :: TM -> Term
 initTerm m = h <-> lam "x" $ lam "u" $ var "u" <-> as where

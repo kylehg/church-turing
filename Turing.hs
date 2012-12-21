@@ -19,8 +19,8 @@ data Action = R          -- Read right
 -- | A Turing machine
 data TM = TM {
   -- The possible states
-  states :: Set.Set TMState,
-  alpha  :: Set.Set Char,
+  states :: [TMState],
+  alpha  :: [Char],
   -- The transition function
   trans  :: (TMState, Alphabet) -> (TMState, Move),
   -- The beginning state

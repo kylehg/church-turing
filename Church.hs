@@ -7,7 +7,7 @@ import           Control.Applicative
 import           Data.List
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import           Test.QuickCheck
+--import           Test.QuickCheck
 
 
 type Name = String
@@ -17,8 +17,8 @@ data Term = Var Name
 
 instance Show Term where
   show (Var n)     = n
-  show (Lam n t)   = "(λ" ++ n ++ "." ++ (show t) ++ ")"
-  show (App t1 t2) = "(" ++ (show t1) ++ " " ++ (show t2) ++ ")"
+  show (Lam n t)   = "\\" ++ n ++ "." ++ (show t)
+  show (App t1 t2) = "(" ++ (show t1) ++ ") (" ++ (show t2) ++ ")"
 
 instance Eq Term where
   -- I've defined term equality as alpha-equality.
@@ -28,7 +28,7 @@ instance Eq Term where
     aEq m (Lam n1 t1)  (Lam n2 t2)  = aEq (Map.insert n1 n2 m) t1 t2
     aEq m (Var n1)     (Var n2)     = maybe False (== n2) (Map.lookup n1 m)
     aEq _ _ _                       = False
-
+{-
 instance Arbitrary Term where
   -- Borrowed from Brent Yorgey's LC interpreter. See /reading.
   arbitrary = sized term where
@@ -36,7 +36,7 @@ instance Arbitrary Term where
     term 0 = var <$> v
     term n = oneof [lam <$> v <*> term (n-1),
                     (<->) <$> term (n `div` 2) <*> term (n `div` 2)]
-
+-}
 
 -- Some helpers
 lam :: String -> Term -> Term

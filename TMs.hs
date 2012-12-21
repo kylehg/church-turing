@@ -2,15 +2,15 @@ module TMs where
 
 import qualified Data.Set as Set
 import Data.List
-import Test.HUnit
+--import Test.HUnit
 import Turing
 
-
+{-
 main :: IO ()
 main = do
   _ <- runTestTT $ TestList [test1]
   return ()
-
+-}
 
 -- A turing machine to decide the language of all strings of 0s of
 -- length of a power of 2.
@@ -44,12 +44,12 @@ m1 = TM {
   trans  = trans1,
   start  = 1,
   end    = 6,
-  states = Set.fromList [1..6],
-  alpha  = Set.fromList "_0x"
+  states = [1..6],
+  alpha  =  "_0x"
   }
 
-test1 :: Test
-test1 = (listFromTape $ runTM m1 $ tapeFromList "0000") ~?= "_xxx_"
+--test1 :: Test
+--test1 = (listFromTape $ runTM m1 $ tapeFromList "0000") ~?= "_xxx_"
 
 
 -- A turing machine to compute 001011011101111...
