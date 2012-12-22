@@ -1,5 +1,4 @@
 module Conversion where
-
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import           Test.HUnit
@@ -114,9 +113,13 @@ testM1 :: Test
 testM1 = Just (runTM m1 startTape1) ~?=
          (fromConfig m1 $ nf $ (tm m1) <-> config m1 startTape1)
 
+testM2 :: Test
+testM2 = Just (runTM m1 startTape2) ~?=
+         (fromConfig m1 $ nf $ (tm m1) <-> config m1 startTape2)
+
 main :: IO ()
 main = do
   _ <- runTestTT $ TestList [
-    testM1
+    testM1, testM2
     ]
   return ()

@@ -24,8 +24,15 @@ data TM = TM {
   }
 
 -- | The tape to be read by a turing machine
-data Tape = Tape [Alphabet] [Alphabet] deriving (Eq, Show)
+data Tape = Tape [Alphabet] [Alphabet] deriving Show
 
+instance Eq Tape where
+  (==) (Tape l1 r1) (Tape l2 r2) =
+    eq' (reverse l1 ++ r1) (reverse l2 ++ r2) where
+      eq' (x:xs) (y:ys) = x == y && (eq' xs ys)
+      eq' xs []         = all (== '_') xs
+      eq' [] ys         = all (== '_') ys
+      eq' [] []         = True
 
 -- | Convert a list of symbols to a Tape
 tapeFromList :: [Alphabet] -> Tape
