@@ -2,7 +2,7 @@ module Conversion where
 
 import qualified Data.Set as Set
 import qualified Data.Map as Map
---import           Test.HUnit
+import           Test.HUnit
 import           Church
 import           Turing
 import           LCs
@@ -88,58 +88,39 @@ tm m = recurse <-> tm' where
             iterApp cs (var "c") (cTerm q) <-> var "l" <-> var "r"
   cTerm q c | q == qe = lam "l" $ lam "r" $ lam "x" $
                         var "x" <-> var "l" <-> el cs c <-> var "r" <-> el qs q
-            | a = L   = lam "l" $ lam "r" $ var "x" <->
+            | d == L   = lam "l" $ lam "r" $ var "x" <->
                         (iterApp cs (var "l") pc <-> p <->
                          (cons cs <-> el cs c <-> var "r") <->
                          el qs q')
-            | a = R   = lam "l" $ lam "r" $ var "x" <->
+            | d == R   = lam "l" $ lam "r" $ var "x" <->
                         (iterApp cs (var "r") rc <-> r <->
                          (cons cs <-> el cs c <-> var "l") <->
                          el qs q')
-    where (q', c', a) = trans m (q, c)
+    where (q', c', d) = trans m (q, c)
   pc c = lam "l" $ lam "r" $ lam "q" $ lam "x" $
          var "x" <-> var "l" <-> el cs c <-> var "r" <-> var "q"
   p = lam "r" $ lam "q" $ lam "x" $
-      var "x" <-> empty <-> el cs b <-> var "r" <-> var "q"
+      var "x" <-> els cs "" <-> el cs b <-> var "r" <-> var "q"
   rc c = lam "r" $ lam "l" $ lam "q" $ lam "x" $
          var "x" <-> var "l" <-> el cs c <-> var "r" <-> var "q"
-  p = lam "l" $ lam "q" $ lam "x" $
-      var "x" <-> lam "u" <-> el cs b <-> empty <-> var "q"
+  r = lam "l" $ lam "q" $ lam "x" $
+      var "x" <-> var "l" <-> el cs b <-> els cs "" <-> var "q"
 
   
-
-
-abc = "abcd"
-a = el abc 'b'
-as = els abc "acd"
-s1 = nf $ cons abc <-> a <-> as
-s2 = els abc "bacd"
-s3 = nf $ cat abc <-> as <-> as
-s4 = els abc "acdacd"
-
-
 config :: TM -> Tape -> TMState -> Term
 config m t q = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
   ls = els (alpha m) (behind t)
   c = el (alpha m) (getC t)
   rs = els (alpha m) (ahead t)
   qt = el (states m) q
+
+fromConfig :: TM -> Term -> Maybe (Tape, Term)
+fromConfig m (Lam x (App (App (App (App (Var y) ls) c) rs) q))
+  | x == y    = do l' <- fromTerm cs ls
+                   r' <- fromTerm cs $ nf $ (cons cs) <-> c <-> rs
+                   return (Tape l' r', q)
+  | otherwise = Nothing
+  where cs = alpha m
+
   
-
-{-
-initTerm :: TM -> Term
-initTerm m = h <-> lam "x" $ lam "u" $ var "u" <-> as where
-  as = foldr a b (alpha m)
-  b = convTMConfig (alpha m) (states m) (Tape "" "_", start m)
-  a c t = lam "u" $ (var "x" <-> var "u") <->
-          (lam "u" $ lam "a" $ lam "v" $ lam "q" $ 
-           (lam "w" (lam "x" $ 
-                     var "x" <-> var "u" <-> c' <-> var "w" <-> var "q"))
-           <-> ((ac $ alpha m) <-> var "a" <-> var "v")) <-> t where
-            c' = convSym (alpha m) $ var [c]
--}
-
---runTerm :: TM -> Term
-
-
 

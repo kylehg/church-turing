@@ -7,7 +7,6 @@ import           Control.Applicative
 import           Data.List
 import qualified Data.Map as Map
 import qualified Data.Set as Set
---import           Test.QuickCheck
 
 
 type Name = String
@@ -28,15 +27,7 @@ instance Eq Term where
     aEq m (Lam n1 t1)  (Lam n2 t2)  = aEq (Map.insert n1 n2 m) t1 t2
     aEq m (Var n1)     (Var n2)     = maybe False (== n2) (Map.lookup n1 m)
     aEq _ _ _                       = False
-{-
-instance Arbitrary Term where
-  -- Borrowed from Brent Yorgey's LC interpreter. See /reading.
-  arbitrary = sized term where
-    v = (:[]) <$> elements ['p'..'z']
-    term 0 = var <$> v
-    term n = oneof [lam <$> v <*> term (n-1),
-                    (<->) <$> term (n `div` 2) <*> term (n `div` 2)]
--}
+
 
 -- Some helpers
 lam :: String -> Term -> Term
