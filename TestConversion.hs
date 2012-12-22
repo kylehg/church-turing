@@ -31,11 +31,6 @@ test_cons = TestList [
   nf (cons abc <-> char 'a' <-> string "bc") ~?= string "abc"
   ]
 
-{-
-prop_conv :: TM -> String -> Bool
-prop_conv m t = nf $ (execTerm m) <-> (initTerm m) tapeTerm $ listFromTape $ runTM m1 $ tapeFromList t
--}
-
 main :: IO ()
 main = do
   _ <- runTestTT $ TestList [

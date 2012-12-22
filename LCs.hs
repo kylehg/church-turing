@@ -4,7 +4,7 @@ module LCs where
 
 import Church
 import Prelude hiding (and, pred, fst, snd, succ)
---import Test.HUnit
+import Test.HUnit
 
 
 -- | ((λx.y) (λz.(λq.z z))) ((λf.g) (λy.h))
@@ -110,10 +110,9 @@ fact = y <-> fact1
 
 
 -- Tests ----------------------------------------------------------------------
-{-main :: IO ()
+main :: IO ()
 main = do
   _ <- runTestTT $ TestList [
---     "factorial" ~: 
+     "factorial" ~: 
                             ]
   return ()
--}
