@@ -5,7 +5,6 @@ import qualified Data.Map as Map
 import           Test.HUnit
 import           Church
 import           Turing
-import           LCs
 import           TMs
 import Prelude hiding (id)
 
@@ -32,11 +31,6 @@ iterApp :: [c] -> Term -> (c -> Term) -> Term
 iterApp cs t f = iterApp' (reverse cs) where
   iterApp' (c:cs) = (iterApp' cs) <-> (f c)
   iterApp' []     = t
-
--- | Like el, except applies the determining variable to a given term 
--- at the end.
-appEl :: Show c => [c] -> c -> Term -> Term
-appEl cs c t = iterLam cs (var (show c) <-> t)
 
 -- | Convert a term back into a string (if it's valid).
 fromTerm :: [Char] -> Term -> Maybe String
@@ -68,16 +62,7 @@ cons cs =
   lam "a" $ lam "as" $ iterApp cs (var "a") cons' <-> var "as" where
     cons' c = lam "as" $ iterLam cs (lam "b" $ var (show c) <-> var "as")
 
--- | Concatenate symbol terms
--- (cat cs) <-> (els cs a) <-> (els cs b) --> els cs (a ++ b)
-cat :: [Char] -> Term
-cat cs = recurse <-> cat' where
-  cat' = lam "x" $ lam "a" $ lam "b" $
-         iterApp cs (var "a") cat'' <-> id <-> var "b"
-  cat'' c = lam "a" $ lam "b" $
-            (lam "h" $ iterLam cs $ lam "g" $ var (show c) <-> var "h") <->
-            (var "x" <-> var "a" <-> var "b")
-
+-- | Convert a Turing machine to a LC term
 tm :: TM -> Term
 tm m = recurse <-> tm' where
   (qs, cs, b, q0, qe) = (states m, alpha m, blank m, start m, end m)
@@ -107,6 +92,7 @@ tm m = recurse <-> tm' where
       var "x" <-> var "l" <-> el cs b <-> els cs "" <-> var "q"
 
   
+-- | Encode the configuration of an LC term as \x.x ls c rs q
 config :: TM -> Tape -> Term
 config m t = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
   ls = els (alpha m) (behind t)
@@ -114,6 +100,7 @@ config m t = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
   rs = els (alpha m) (ahead t)
   qt = el (states m) (start m)
 
+-- | Decode a configuration term for a TM into a tape.
 fromConfig :: TM -> Term -> Maybe Tape
 fromConfig m (Lam x (App (App (App (App (Var y) ls) c) rs) q))
   | x == y    = do l' <- fromTerm cs ls
