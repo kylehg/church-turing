@@ -78,6 +78,35 @@ cat cs = recurse <-> cat' where
             (lam "h" $ iterLam cs $ lam "g" $ var (show c) <-> var "h") <->
             (var "x" <-> var "a" <-> var "b")
 
+tm :: TM -> Term
+tm m = recurse <-> tm' where
+  (qs, cs, b, q0, qe) = (states m, alpha m, blank m, start m, end m)
+  tm' = lam "x" $ lam "y" $ var "y" <->
+        (lam "l" $ lam "c" $ lam "r" $ lam "q" $
+         iterApp qs (var "q") qTerm <-> var "l" <-> var "c" <-> var "r") 
+  qTerm q = lam "l" $ lam "c" $ lam "r" $
+            iterApp cs (var "c") (cTerm q) <-> var "l" <-> var "r"
+  cTerm q c | q == qe = lam "l" $ lam "r" $ lam "x" $
+                        var "x" <-> var "l" <-> el cs c <-> var "r" <-> el qs q
+            | a = L   = lam "l" $ lam "r" $ var "x" <->
+                        (iterApp cs (var "l") pc <-> p <->
+                         (cons cs <-> el cs c <-> var "r") <->
+                         el qs q')
+            | a = R   = lam "l" $ lam "r" $ var "x" <->
+                        (iterApp cs (var "r") rc <-> r <->
+                         (cons cs <-> el cs c <-> var "l") <->
+                         el qs q')
+    where (q', c', a) = trans m (q, c)
+  pc c = lam "l" $ lam "r" $ lam "q" $ lam "x" $
+         var "x" <-> var "l" <-> el cs c <-> var "r" <-> var "q"
+  p = lam "r" $ lam "q" $ lam "x" $
+      var "x" <-> empty <-> el cs b <-> var "r" <-> var "q"
+  rc c = lam "r" $ lam "l" $ lam "q" $ lam "x" $
+         var "x" <-> var "l" <-> el cs c <-> var "r" <-> var "q"
+  p = lam "l" $ lam "q" $ lam "x" $
+      var "x" <-> lam "u" <-> el cs b <-> empty <-> var "q"
+
+  
 
 
 abc = "abcd"
