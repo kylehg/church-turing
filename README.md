@@ -46,6 +46,11 @@ As for elements of a set, we encode an element _xi_ in that set as _\x1.\x2.[...
 
 With these conventions, defining the `cons` operation, and reading characters, and finally encoding a Turing machine configuration becomes straightforward. Relies on enumerating a series of function applications for every possible state and character combination, and then applying it recursively to the state. This is done in `Conversion.tm`.
 
+## Files
+
+- `Turing.hs`: The definition of a turing machine and the tools to run it.
+- `Church.hs`: The definition of lambda calculus terms and the beta reduction of them.
+- `Conversion.hs`: The functions to convert TMs to the LC.
 
 ## Bibliography
 
