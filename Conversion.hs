@@ -90,11 +90,11 @@ tm m = recurse <-> tm' where
                         var "x" <-> var "l" <-> el cs c <-> var "r" <-> el qs q
             | d == L   = lam "l" $ lam "r" $ var "x" <->
                         (iterApp cs (var "l") pc <-> p <->
-                         (cons cs <-> el cs c <-> var "r") <->
+                         (cons cs <-> el cs c' <-> var "r") <->
                          el qs q')
             | d == R   = lam "l" $ lam "r" $ var "x" <->
                         (iterApp cs (var "r") rc <-> r <->
-                         (cons cs <-> el cs c <-> var "l") <->
+                         (cons cs <-> el cs c' <-> var "l") <->
                          el qs q')
     where (q', c', d) = trans m (q, c)
   pc c = lam "l" $ lam "r" $ lam "q" $ lam "x" $
@@ -107,20 +107,29 @@ tm m = recurse <-> tm' where
       var "x" <-> var "l" <-> el cs b <-> els cs "" <-> var "q"
 
   
-config :: TM -> Tape -> TMState -> Term
-config m t q = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
+config :: TM -> Tape -> Term
+config m t = lam "x" $ var "x" <-> ls <-> c <-> rs <-> qt where
   ls = els (alpha m) (behind t)
   c = el (alpha m) (getC t)
   rs = els (alpha m) (ahead t)
-  qt = el (states m) q
+  qt = el (states m) (start m)
 
-fromConfig :: TM -> Term -> Maybe (Tape, Term)
+fromConfig :: TM -> Term -> Maybe Tape
 fromConfig m (Lam x (App (App (App (App (Var y) ls) c) rs) q))
   | x == y    = do l' <- fromTerm cs ls
                    r' <- fromTerm cs $ nf $ (cons cs) <-> c <-> rs
-                   return (Tape l' r', q)
+                   return $ Tape l' r'
   | otherwise = Nothing
   where cs = alpha m
 
-  
 
+testM1 :: Test
+testM1 = Just (runTM m1 startTape1) ~?=
+         (fromConfig m1 $ nf $ (tm m1) <-> config m1 startTape1)
+
+main :: IO ()
+main = do
+  _ <- runTestTT $ TestList [
+    testM1
+    ]
+  return ()
