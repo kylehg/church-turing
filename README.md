@@ -3,51 +3,48 @@ Lambda Calculus–Turing Machine Converter
 
 For the final project in Brent Yorgey's [Art of Recursion](http://www.cis.upenn.edu/~cis39903/) course, I have undertaken to write a converter between the lambda calculus and Turing machines, in Haskell.
 
-More documentation to come as the project progresses.
+## Lambda calculus
+For the definition of a LC term, we used the commonly-agreed-upon version described in class.
+
+```haskell
+data Term = Var Name
+          | Lam Name Term
+          | App Term Term
+```
+
+In the common, notation, `Var "x"` is _x_, `Lam x t` is _\x. t_, and `App t u` is _t u_.
+
+We have also defined the normal form of a term as the beta-reduced term, which is described by `nf` in `Church.hs`. For describing the beta-reduction, I looked at Augustsson, "Lambda-calculus cooked four ways."
+
+## Turing machines
+
+There are many definitions of a Turing machine. For our conversion, we use the one described in Sipser, "Introduction to the Theory of Commputation," as a tuple of:
+
+1. A set of possible states, represented here as `[Int]`.
+1. A set of possible characters (the alphabet), represented as `[Char]`.
+1. An initial state.
+1. A terminal state.
+1. A transition function `(Int, Char) -> (Int, Char, Dir)`, where `Dir = L | R`.
+
+We represent a TM tape as a pair of lists, the characters before the head and the characters after.
 
 ## Turing machine → lambda calculus
 
-Given a finite alphabet _S_, we encode a symbol _xi_ in that alphabet as `\x1.\x2.[...]\xn.\e.xi`, where _e_ is represents the blank symbol. Thus, for the whole tape, `w1w2w3` is encoded as
+For the transition from Turing machines to lambda calculus, I relied heavily on the proofs in Dal Lago and Martini, "The Weak Lambda Calculus as a Reasonable Machine," which ran be found in `/reading`.
 
-`\x1.x2.[...]\xn.\e.w1 (\x1.\x2.[...]\xn.\e.w2 (\x1.[...]\xn.\e.w3 (\x1.[...]\xn.\e.e)))`
+There are two main "tricks" on which the conversion to lambda calculus relies: recusion through the Y-combinator and encoding symbols. The Y-combinator here is defined as:
 
-Reading symbols is somewhat trivial, then.
+    Y = F F
+	F = \x.\f.f (\z. x x f z)
 
+For any LC term _T_, _Y T_ beta-reduces to _T (\z.Y T z)_.
 
-Plan:
-- 
+As for elements of a set, we encode an element _xi_ in that set as _\x1.\x2.[...]\xn.xi_. For a string of symbols, we string these together, so
 
+    encode("")    = \x1.\x2.[...]\xn.\e. e
+	encode(xi:xs) = \x1.\x2.[...]\xn.\e.xi encode(xs)
 
-### Reduction strategy
-
-Brent on substition:
-
-> Before performing a substitution, first rename bound variables as necessary (resulting in an α-equivalent term) so that no free variable has the same name as any bound variable.
-**Option 1**: Take a set of variables and a term, and go through the term, ehc
-
-
-### Turing Machine Definition
-
-For defining a Turing Machine, I've borrowed mostly from Turing (1936) and Sipser (2006), as well as made some convenient abstrations that I deemed acceptable.
-
-#### Tape Representation
-
-I've defined a Turing Machine tape as a pair of lists of symbols before and after the TM head, respectively. This allows me to convenintly read forward and backward using the `:` operator in Haskell.
-
-```
-data Tape = Tape [Alphabet] [Alphabet] deriving (Eq, Show)
-```
-
-#### Insertion & Deletion
-
-In addition to the operations of moving the TM head left and right, I've added the convenience operation of inserting and removing a symbol. This is valid because we can write a TM that performs this operation in all circumstances. To insert a symbol _a_ before a symbol _b_ in the tape:
-
-1. At _b_, we replace _b_ with a new symbol `#` and read right, remembering _b_ with a state. (Since the alphabet is finite, we can do this.)
-2. Once we reach the end of the the tape and have shifted the last symbol over one, we read left until hittin `#`.
-3. We replace `#` with _a_ and continue on our merry way.
-
-By a similar token, we can write a TM for removing a symbol from the tape and shifting everyting left. I use the combination of insertion and deletion in lieu of defining standalone print and erasure actions.
-
+With these conventions, defining the `cons` operation, and reading characters, and finally encoding a Turing machine configuration becomes straightforward. Relies on enumerating a series of function applications for every possible state and character combination, and then applying it recursively to the state. This is done in `Conversion.tm`.
 
 
 ## Bibliography
